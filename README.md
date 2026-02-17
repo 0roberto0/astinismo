@@ -18,7 +18,7 @@ Acesse aqui:
 
 ## 📸 Preview
 
-> Coloque um print do jogo aqui (opcional)
+> <img width="1919" height="955" alt="image" src="https://github.com/user-attachments/assets/e3d820e7-73c3-411a-b6bb-5df3e1c2792a" />
 
 ---
 
