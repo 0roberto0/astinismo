@@ -201,9 +201,32 @@ button:disabled{ opacity:.6; cursor:not-allowed; }
     color:#ff4d4d;
 }
 
+.mobile-logo{
+	display:none;
+    width:140px;
+    height:140px;
+	margin:0 auto 24px auto;
+	border-radius:26px;
+
+	background-color: rgba(255,255,255,.08);
+
+	background-image:url("astini.jpg");
+	background-repeat:no-repeat;
+	background-size:cover;
+	background-position: 50% 45%;
+
+	box-shadow:
+		0 6px 18px rgba(0,0,0,.45),
+		inset 0 0 0 2px rgba(255,255,255,.25);
+}
+
 /* MOBILE PERFEITO */
 @media (max-width:900px){
     .side{ display:none; }
+
+	.mobile-logo{
+		display:block;
+	}
 
     .container{
         width:92vw;
@@ -232,6 +255,7 @@ button:disabled{ opacity:.6; cursor:not-allowed; }
     .bottom { transform: rotateX(-90deg) translateZ(65px); }
 }
 
+
 </style>
 </head>
 
@@ -241,6 +265,7 @@ button:disabled{ opacity:.6; cursor:not-allowed; }
 <div class="side right"></div>
 
 <div class="container">
+	<div class="mobile-logo"></div>
     <h1>🎲 Dado do Astinismo</h1>
 
     <div class="scene" id="scene">
