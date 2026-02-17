@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dado do Astinismo</title>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0c0c0c;
+    font-family:'Segoe UI',sans-serif;
+    overflow:hidden;
+}
+
+/* SHAKE DA TELA */
+@keyframes shake{
+    0%{transform:translate(0)}
+    20%{transform:translate(-8px,5px)}
+    40%{transform:translate(8px,-5px)}
+    60%{transform:translate(-6px,3px)}
+    80%{transform:translate(6px,-3px)}
+    100%{transform:translate(0)}
+}
+.shake{ animation:shake .45s; }
+
+/* imagens laterais — SEM FILTRO */
+.side{
+    position:fixed;
+    top:0;
+    height:100vh;
+    width:32vw;
+    background:url("astini.jpg") center/cover no-repeat;
+}
+.left{ left:0; }
+.right{ right:0; transform:scaleX(-1); }
+
+/* animação do painel */
+@keyframes panelEntrance{
+    from{ opacity:0; transform:translateY(40px) scale(.95); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* jackpot animado */
+@keyframes jackpotPulse{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.10)}
+    100%{transform:scale(1)}
+}
+.jackpot-animate{ animation:jackpotPulse .4s ease; }
+
+@keyframes winOverlayMeme{
+    0%   { opacity:0; transform:translateY(18px) scale(.98); }
+    35%  { opacity:1; }
+    100% { opacity:0; transform:translateY(0) scale(1); }
+}
+.container.win-glow::before{
+    background:
+        radial-gradient(circle at 50% 90%,
+            rgba(0,255,150,.45),
+            rgba(0,255,150,.20) 35%,
+            rgba(0,255,150,.08) 55%,
+            rgba(0,0,0,0) 75%);
+    animation: winOverlayMeme .6s cubic-bezier(.2,.8,.2,1);
+}
+
+/* Derrota: vinheta vermelha + flash */
+@keyframes loseOverlayMeme{
+    0%   { opacity:0; }
+    25%  { opacity:1; }
+    100% { opacity:0; }
+}
+.container.lose-flash::before{
+    background:
+        radial-gradient(closest-side at 50% 50%,
+            rgba(255,0,0,0) 55%,
+            rgba(255,0,0,.18) 75%,
+            rgba(255,0,0,.35) 100%);
+    animation: loseOverlayMeme .28s ease-out;
+}
+
+/* container */
+.container{
+    position:relative;
+	overflow:hidden;
+    z-index:10;
+    text-align:center;
+
+    width:420px;
+    min-height:520px;
+
+    background:rgba(255,255,255,0.05);
+    padding:40px;
+    border-radius:25px;
+    backdrop-filter: blur(10px);
+    box-shadow:0 15px 40px rgba(0,0,0,0.6);
+    color:white;
+
+    animation:panelEntrance .6s ease;
+}
+
+.container::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    opacity:0;
+    border-radius:25px;
+	will-change: opacity, transform;
+	transform: translateZ(0);
+}
+
+h1{ margin-bottom:30px; }
+
+/* DADO */
+.scene{
+    width:150px;
+    height:150px;
+    perspective:700px;
+    margin:26px auto 62px auto;
+    position:relative;
+}
+
+.cube{
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transform: rotateX(-30deg) rotateY(45deg);
+    transition: transform 1.4s cubic-bezier(.17,.67,.3,1.2);
+}
+
+.face{
+    position:absolute;
+    width:150px;
+    height:150px;
+
+    background:linear-gradient(145deg,#ffffff,#f0f0f0);
+    border-radius:20px;
+
+    border:3px solid #bdbdbd;
+
+    box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.55),
+        inset 0 -10px 18px rgba(0,0,0,.08);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:50px;
+    color:#111;
+
+    backface-visibility:hidden;
+}
+
+.front  { transform: rotateY(0deg) translateZ(75px); }
+.back   { transform: rotateY(180deg) translateZ(75px); }
+.rightf { transform: rotateY(90deg) translateZ(75px); }
+.leftf  { transform: rotateY(-90deg) translateZ(75px); }
+.top    { transform: rotateX(90deg) translateZ(75px); }
+.bottom { transform: rotateX(-90deg) translateZ(75px); }
+
+button{
+    margin-top:8px;
+    padding:15px 35px;
+    border:none;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    background:linear-gradient(45deg,#00ff87,#00c9ff);
+    transition:.2s;
+}
+button:hover{ transform:scale(1.06); }
+button:disabled{ opacity:.6; cursor:not-allowed; }
+
+.result{
+    margin-top:25px;
+    font-size:1.3rem;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+.win{ color:#00ffae;}
+.lose{ color:#ff6b6b;}
+
+.stats{ margin-top:18px; }
+
+.jackpot{
+    margin-top:8px;
+    color:gold;
+    font-weight:bold;
+}
+.jackpot.negative{
+    color:#ff4d4d;
+}
+
+/* MOBILE PERFEITO */
+@media (max-width:900px){
+    .side{ display:none; }
+
+    .container{
+        width:92vw;
+        padding:28px;
+        min-height:auto;
+    }
+
+    .scene{
+        width:130px;
+        height:130px;
+        margin:22px auto 56px auto;
+    }
+
+    .face{
+        width:130px;
+        height:130px;
+        font-size:42px;
+    }
+
+    /* ajustar translateZ para metade de 130 */
+    .front  { transform: rotateY(0deg) translateZ(65px); }
+    .back   { transform: rotateY(180deg) translateZ(65px); }
+    .rightf { transform: rotateY(90deg) translateZ(65px); }
+    .leftf  { transform: rotateY(-90deg) translateZ(65px); }
+    .top    { transform: rotateX(90deg) translateZ(65px); }
+    .bottom { transform: rotateX(-90deg) translateZ(65px); }
+}
+
+</style>
+</head>
+
+<body id="body">
+
+<div class="side left"></div>
+<div class="side right"></div>
+
+<div class="container">
+    <h1>🎲 Dado do Astinismo</h1>
+
+    <div class="scene" id="scene">
+        <div class="cube" id="cube">
+            <div class="face front">1</div>
+            <div class="face back">6</div>
+            <div class="face rightf">3</div>
+            <div class="face leftf">4</div>
+            <div class="face top">2</div>
+            <div class="face bottom">5</div>
+        </div>
+    </div>
+
+    <button id="btnRoll" onclick="rollDice()">Girar</button>
+
+    <div id="result" class="result"></div>
+
+    <div class="stats">
+        ✅ Vitórias: <span id="wins">0</span> |
+        💀 Derrotas: <span id="losses">0</span>
+    </div>
+
+    <div class="jackpot" id="jackpotWrap">
+        💰 Jackpot atual: R$ <span id="jackpot">1000</span>
+    </div>
+</div>
+
+<script>
+let wins = 0;
+let losses = 0;
+let jackpot = 1000;
+let rolling = false;
+
+let audioCtx = null;
+let winBuf = null;
+let loseBuf = null;
+let audioReady = false;
+const panel = document.querySelector(".container");
+
+const WIN_URL  = "https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3";
+const LOSE_URL = "https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3";
+
+async function ensureAudio(){
+    if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state !== "running"){
+        try{ await audioCtx.resume(); } catch {}
+    }
+    if(audioReady) return;
+
+    try{
+        const [w, l] = await Promise.all([fetch(WIN_URL), fetch(LOSE_URL)]);
+        const [wb, lb] = await Promise.all([w.arrayBuffer(), l.arrayBuffer()]);
+        winBuf  = await audioCtx.decodeAudioData(wb);
+        loseBuf = await audioCtx.decodeAudioData(lb);
+        audioReady = true;
+    }catch{
+        audioReady = false;
+    }
+}
+
+function playBuffer(buffer, volume=0.9){
+    if(!audioCtx || !buffer) return false;
+
+    const src = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+    gain.gain.value = volume;
+
+    src.buffer = buffer;
+    src.connect(gain);
+    gain.connect(audioCtx.destination);
+    src.start(0);
+    return true;
+}
+
+function beep(freq=600, ms=140){
+    if(!audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    g.gain.value = 0.06;
+    o.type = "square";
+    o.frequency.value = freq;
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + ms/1000);
+}
+
+/* cubo */
+const rotations = {
+    1:"rotateX(0deg) rotateY(0deg)",
+    2:"rotateX(-90deg) rotateY(0deg)",
+    3:"rotateY(-90deg)",
+    4:"rotateY(90deg)",
+    5:"rotateX(90deg)",
+    6:"rotateY(180deg)"
+};
+
+/* jackpot animado (número rolando) */
+function animateJackpot(from, to){
+    const el = document.getElementById("jackpot");
+    const wrap = document.getElementById("jackpotWrap");
+
+    wrap.classList.remove("jackpot-animate");
+    void wrap.offsetWidth;
+    wrap.classList.add("jackpot-animate");
+
+    const duration = 450;
+    const start = performance.now();
+    const diff = to - from;
+
+    function tick(now){
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const value = Math.round(from + diff * eased);
+        el.textContent = value.toLocaleString('pt-BR');
+        if(t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+function refreshJackpotColor(){
+    const wrap = document.getElementById("jackpotWrap");
+    if(jackpot < 0) wrap.classList.add("negative");
+    else wrap.classList.remove("negative");
+}
+
+function triggerPanelFx(panel, className){
+    panel.classList.remove("win-glow","lose-flash");
+
+    requestAnimationFrame(() => {
+        panel.classList.add(className);
+        setTimeout(() => panel.classList.remove(className), 650);
+    });
+}
+
+async function rollDice(){
+    if(rolling) return;
+    rolling = true;
+
+    const cube = document.getElementById("cube");
+    const result = document.getElementById("result");
+    const body = document.getElementById("body");
+    const btn = document.getElementById("btnRoll");
+
+    btn.disabled = true;
+
+    // ✅ destrava e pré-carrega o áudio no clique
+    await ensureAudio();
+
+    result.className = "result";
+    result.textContent = "Girando...";
+
+    const number = Math.floor(Math.random() * 6) + 1;
+
+    cube.style.transform =
+        `rotateX(${720 + Math.random() * 720}deg)
+         rotateY(${720 + Math.random() * 720}deg)`;
+
+    setTimeout(() => {
+        cube.style.transform = rotations[number];
+
+        const jackpotBefore = jackpot;
+
+        if(number <= 5){
+            wins++;
+            jackpot += 20;
+
+            result.textContent = "🎉 Você ganhou R$20 do Caio Gordo!";
+            result.classList.add("win");
+
+            if(!(audioReady && playBuffer(winBuf, 0.9))){
+                beep(780, 120);
+            }
+			
+			triggerPanelFx(panel, "win-glow");
+
+        }else{
+            losses++;
+
+            jackpot -= 100000;
+
+            result.textContent = "💀 Você está devendo R$ 100.000 ao Astinismo!";
+            result.classList.add("lose");
+
+            if(!(audioReady && playBuffer(loseBuf, 0.9))){
+                beep(160, 180);
+            }
+
+            body.classList.add("shake");
+            setTimeout(() => body.classList.remove("shake"), 450);
+			
+			triggerPanelFx(panel, "lose-flash");
+        }
+
+        document.getElementById("wins").textContent = wins;
+        document.getElementById("losses").textContent = losses;
+
+        animateJackpot(jackpotBefore, jackpot);
+        refreshJackpotColor();
+
+        btn.disabled = false;
+        rolling = false;
+
+    }, 1200);
+}
+
+/* init */
+document.getElementById("jackpot").textContent = jackpot.toLocaleString('pt-BR');
+refreshJackpotColor();
+</script>
+
+</body>
+</html>
