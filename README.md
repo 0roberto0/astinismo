@@ -45,4 +45,4 @@ Nenhuma dívida é real.
 
 ---
 
-Feito para zoeira 😅
+😅 Feito pela zoeira no curso (Midas Club), do Astini.
